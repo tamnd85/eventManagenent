@@ -8,6 +8,7 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Http\Resources\AttendeeResource;
 use App\Http\Traits\CanLoadRelationships;
+use Illuminate\Support\Facades\Gate;
 
 class AttendeeController extends Controller
 {
@@ -15,6 +16,12 @@ class AttendeeController extends Controller
     use CanLoadRelationships;
 
     private array $relations = ['user'];
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->except(['index', 'show', 'update']);
+        $this->authorizeResource(Attendee::class, 'attendee');
+    }
 
     /**
      * Display a listing of the resource.
@@ -54,21 +61,13 @@ class AttendeeController extends Controller
         );
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $attendee->delete();
-
-        return response(status: 204);
-    }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $event, Attendee $attendee)
+    public function destroy(Event $event, Attendee $attendee)
     {
+        //$this->authorize('delete-attendee', [$event, $attendee]);
         $attendee->delete();
 
         return response(status: 204);
